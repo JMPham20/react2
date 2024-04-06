@@ -1,33 +1,54 @@
 import React, { Component } from 'react';
+import { DropdownButton, MenuItem } from 'react-bootstrap';
 import List from './List';
 
 class FilteredList extends Component {
   constructor(props) {
     super(props);
-    // The state is just a list of key/value pair (like a hashmap)
+    
+    // Add a new key/value pair in the state to keep track of type
     this.state = {
-      search: ""
+      search: "",
+      selectedType: "All" // Initialize selectedType to "All"
     };
   }
-
-  // Sets the state whenever the user types on the search bar
+  
+  // Updates the state whenever the user types on the search bar
   onSearch = (event) => {
     this.setState({ search: event.target.value.toLowerCase() });
   }
-
-  filterItem = (item) => {
-    // Checks if the current search term is contained in this item
-    return item.name.toLowerCase().search(this.state.search) !== -1;
+  
+  // Updates the selectedType in the state when a type is selected from the dropdown
+  onSelectType = (type) => {
+    this.setState({ selectedType: type });
   }
-
+  
+  // Filters items based on both the search term and the selected type
+  filterItem = (item) => {
+    const { search, selectedType } = this.state;
+    const nameMatch = item.name.toLowerCase().includes(search);
+    const typeMatch = selectedType === "All" || item.type.toLowerCase() === selectedType.toLowerCase();
+    return nameMatch && typeMatch;
+  }
+  
   render() {
     return (
       <div className="filter-list">
         <h1>Produce Search</h1>
         <input type="text" placeholder="Search" onChange={this.onSearch} />
-        {/* we are taking the items property (which is the list of 
-        produce), filtering the content to match the search word, then 
-        passing the filtered produce into the List component. */}
+        
+        {/* Dropdown button for selecting produce type */}
+        <DropdownButton
+          title="Select Type"
+          id="type-dropdown"
+          onSelect={this.onSelectType}
+        >
+          <MenuItem eventKey="All">All</MenuItem>
+          <MenuItem eventKey="Fruit">Fruit</MenuItem>
+          <MenuItem eventKey="Vegetable">Vegetable</MenuItem>
+        </DropdownButton>
+        
+        {/* Pass filtered produce to List component */}
         <List items={this.props.items.filter(this.filterItem)} />
       </div>
     );
